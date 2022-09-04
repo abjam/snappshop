@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +20,6 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 
-Route::post('/api/make_transaction', [UserController::class, 'makeTransaction']);
-Route::get('/api/three_users_last_ten', [AccountController::class, 'threeUsersLastTen']);
-Route::get('/api/last_ten_transactions', [AccountController::class, 'last_ten']);
+Route::post('make_transaction', [UserController::class, 'makeTransaction']);
+Route::get('three_users_last_ten', [AccountController::class, 'threeUsersLastTen']);
+Route::get('last_ten_transactions', [AccountController::class, 'last_ten']);

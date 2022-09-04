@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Transaction;
 use App\Models\َAccount;
+use App\Models\User;
 
 class Card extends Model
 {
@@ -25,5 +26,13 @@ class Card extends Model
     public function account()
     {
         return $this->belongsTo(َAccount::class, 'account_id');
+    }
+
+    /**
+     * Get the user that owns the cards.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

@@ -31,6 +31,14 @@ class AccountController extends Controller
         $formatted_date = Carbon::now()->subMinutes(10)->toDateTimeString();
         $trans = Transaction::where('created_at', '>=', $formatted_date)->get();
 
-        return response()->json($trans->toArray());
+        $users_info = DB::table('cards')
+            ->select('user_id', DB::raw('count(id) as number_of_use'))
+            ->whereIn('id', $trans->toArray())
+            ->groupBy('user_id')
+            ->orderByDesc('number_of_use')
+            ->take(3)
+            ->get();
+
+        return response()->json($users_info->toArray());
     }
 }

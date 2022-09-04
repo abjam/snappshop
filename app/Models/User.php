@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Account;
+use App\Models\Card;
 
 class User extends Authenticatable
 {
@@ -42,6 +43,14 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * Get the accounts of the user.
+     */
+    public function cards()
+    {
+        return $this->hasMany(Card::class);
+    }
 
     /**
      * Get the accounts of the user.
