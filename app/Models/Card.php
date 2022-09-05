@@ -13,6 +13,17 @@ class Card extends Model
     use HasFactory;
 
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'user_id',
+        'account_id',
+        'card_number'
+    ];
+
+    /**
      * Get the transactions of the card.
      */
     public function transactions()

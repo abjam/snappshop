@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use App\Rules\TransactionRules;
+use App\Contracts\SendSms\SendSms;
 
 class AccountController extends Controller
 {
@@ -62,7 +63,7 @@ class AccountController extends Controller
         if($validatedData) {
 
             $card_info = Card::where('card_number', $request->input('from'));
-            $balance = $card_info->price - $card_info->price - 500;
+            $balance = $card_info->price - $request->price - 500;
 
             if($balance > 0) {
 
@@ -74,6 +75,25 @@ class AccountController extends Controller
                     $trans->from = $this->numberToEn($request->from);
                     $trans->to = $this->numberToEn($request->to);
                     $trans->save();
+
+                    $from_msg = 'مبلغ کسر شده از حساب شما:'. $request->price - 500 .'.پرداخت با موفقیت انجام شد.';
+                    $to_msg = 'مبلغ اضافه شده از حساب شما:'. $request->price  .'.واریز با موفقیت انجام شد.';
+
+                    $sms_from = new SendSms(
+                        'https://api.kavenegar.com/v1/{API-KEY}/sms/send.json',
+                        $from_msg,
+                        $this->numberToEn($request->to),
+                        $this->numberToEn($request->from)
+                    );
+                    $sms_from->sendSms();
+
+                    $sms_to = new SendSms(
+                        'https://api.kavenegar.com/v1/{API-KEY}/sms/send.json',
+                        $to_msg,
+                        $this->numberToEn($request->to),
+                        $this->numberToEn($request->from)
+                    );
+                    $sms_to->sendSms();
 
                     if($trans) {
                         return response()->json($trans->toArray(),
@@ -93,6 +113,13 @@ class AccountController extends Controller
         }
     }
 
+    /**
+     * Change number to eng
+     *
+     * @param  mixed $number
+     *
+     * @return string
+     */
     private function numberToEn($number)
     {
         $range = range(0, 9);

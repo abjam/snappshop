@@ -11,6 +11,16 @@ class Account extends Model
     use HasFactory;
 
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'user_id',
+        'account_number'
+    ];
+
+    /**
      * Get the cards of the account.
      */
     public function cards()
