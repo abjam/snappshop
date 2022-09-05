@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Transaction;
 use Carbon\Carbon;
+use App\Rules\TransactionRules;
 
 class AccountController extends Controller
 {
@@ -53,17 +54,15 @@ class AccountController extends Controller
     public function makeTransaction(Request $request) {
 
         $validatedData = $request->validate([
-            'from' => ['required', 'numeric', 'min:16', 'max:16'],
-            'to' => ['required', 'min:16', 'numeric', 'max:16'],
-            'price' => ['required', 'numeric'],
-            'card_number' => ['required', 'numeric'],
-            'card_id' => ['required', 'numeric'],
+            'from' => ['required', 'numeric', 'min:16', 'max:16', new TransactionRules],
+            'to' => ['required', 'min:16', 'numeric', 'max:16', new TransactionRules],
+            'price' => ['required', 'numeric', 'min:1000', 'max:50000000'],
         ]);
 
         if($validatedData) {
 
-            $card_info = Card::find($request->input($request->input('card_id')));
-            $balance = $card_info->price - $card_info->price;
+            $card_info = Card::where('card_number', $request->input('from'));
+            $balance = $card_info->price - $card_info->price - 500;
 
             if($balance > 0) {
 
@@ -71,10 +70,9 @@ class AccountController extends Controller
 
                 if($result) {
                     $trans = new Transaction;
-                    $trans->card_id = $request->card_id;
-                    $trans->card_number = $request->card_number;
-                    $trans->from = $request->from;
-                    $trans->to = $request->to;
+                    $trans->price = $request->price;
+                    $trans->from = $this->numberToEn($request->from);
+                    $trans->to = $this->numberToEn($request->to);
                     $trans->save();
 
                     if($trans) {
@@ -93,5 +91,24 @@ class AccountController extends Controller
                 ]);
             }
         }
+    }
+
+    private function numberToEn($number)
+    {
+        $range = range(0, 9);
+        // Persian
+        $persianDecimal = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+        // Arabic
+        $arabicDecimal = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+        // number Arabic
+        $arabic = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+        // number Persian
+        $persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+
+        $string =  str_replace($persianDecimal, $range, $number);
+        $string =  str_replace($arabicDecimal, $range, $number);
+        $string =  str_replace($arabic, $range, $number);
+
+        return str_replace($persian, $range, $string);
     }
 }
