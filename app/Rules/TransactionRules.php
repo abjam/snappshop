@@ -51,22 +51,22 @@ class TransactionRules implements InvokableRule
         $card = (string) preg_replace('/\D/','',$card);
         $strlen = strlen($card);
 
-        if ($irCard==true and $strlen!=16)
+        if ($irCard == true and $strlen != 16)
             return false;
 
-        if ($irCard!=true and ($strlen<13 or $strlen>19))
+        if ($irCard != true and ($strlen <  13 or $strlen > 19))
             return false;
 
-        if (!in_array($card[0],[2,4,5,6,9]))
+        if (!in_array($card[0], [2,4,5,6,9]))
             return false;
 
-        for($i=0; $i<$strlen; $i++)
+        for($i=0; $i < $strlen; $i++)
         {
             $res[$i] = $card[$i];
-            if (($strlen%2)==($i%2))
+            if (($strlen % 2) == ($i % 2))
             {
                 $res[$i] *= 2;
-                if ($res[$i]>9)
+                if ($res[$i] > 9)
                     $res[$i] -= 9;
             }
         }

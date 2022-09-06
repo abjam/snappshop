@@ -20,6 +20,6 @@ use App\Http\Controllers\UserController;
 //     return $request->user();
 // });
 
-Route::post('make_transaction', [UserController::class, 'makeTransaction']);
+Route::post('make_transaction', [AccountController::class, 'makeTransaction']);
 Route::get('three_users_last_ten', [AccountController::class, 'threeUsersLastTen']);
-Route::get('last_ten_transactions', [AccountController::class, 'last_ten']);
+Route::get('last_ten_transactions', [AccountController::class, 'lastTen']);

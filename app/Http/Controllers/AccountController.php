@@ -9,6 +9,7 @@ use App\Models\Transaction;
 use Carbon\Carbon;
 use App\Rules\TransactionRules;
 use App\Contracts\SendSms\SendSms;
+use Symfony\Component\Console\Input\Input;
 
 class AccountController extends Controller
 {
@@ -32,11 +33,12 @@ class AccountController extends Controller
     public function threeUsersLastTen()
     {
         $formatted_date = Carbon::now()->subMinutes(10)->toDateTimeString();
-        $trans = Transaction::where('created_at', '>=', $formatted_date)->get();
+        $trans = Transaction::where('created_at', '>=', $formatted_date)
+                                ->pluck('id')->toArray();
 
         $users_info = DB::table('cards')
             ->select('user_id', DB::raw('count(id) as number_of_use'))
-            ->whereIn('id', $trans->toArray())
+            ->whereIn('id', $trans)
             ->groupBy('user_id')
             ->orderByDesc('number_of_use')
             ->take(3)
@@ -52,8 +54,8 @@ class AccountController extends Controller
      *
      * @return JSON
      */
-    public function makeTransaction(Request $request) {
-
+    public function makeTransaction(Request $request)
+    {
         $validatedData = $request->validate([
             'from' => ['required', 'numeric', 'min:16', 'max:16', new TransactionRules],
             'to' => ['required', 'min:16', 'numeric', 'max:16', new TransactionRules],
@@ -70,11 +72,6 @@ class AccountController extends Controller
                 $result = $card_info->update(['price' => $balance]);
 
                 if($result) {
-                    $trans = new Transaction;
-                    $trans->price = $request->price;
-                    $trans->from = $this->numberToEn($request->from);
-                    $trans->to = $this->numberToEn($request->to);
-                    $trans->save();
 
                     $from_msg = 'مبلغ کسر شده از حساب شما:'. $request->price - 500 .'.پرداخت با موفقیت انجام شد.';
                     $to_msg = 'مبلغ اضافه شده از حساب شما:'. $request->price  .'.واریز با موفقیت انجام شد.';
@@ -94,6 +91,12 @@ class AccountController extends Controller
                         $this->numberToEn($request->from)
                     );
                     $sms_to->sendSms();
+
+                    $trans = new Transaction;
+                    $trans->price = $request->price;
+                    $trans->from = $this->numberToEn($request->from);
+                    $trans->to = $this->numberToEn($request->to);
+                    $trans->save();
 
                     if($trans) {
                         return response()->json($trans->toArray(),
